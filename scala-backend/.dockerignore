@@ -1,0 +1,9 @@
+# Ignore Metals files
+project/metals.sbt
+project/plugins.sbt
+
+# Ignore other unnecessary development files
+.idea/
+.vscode/
+target/
+

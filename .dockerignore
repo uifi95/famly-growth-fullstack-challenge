@@ -1,0 +1,9 @@
+# Ignore Metals files
+scala-backend/project/metals.sbt
+
+# Ignore other unnecessary development files
+.idea/
+.vscode/
+target/
+
+
