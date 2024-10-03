@@ -102,7 +102,7 @@ see your changes by refreshing the page.
 **Making changes to the database**
 
 If you need to make changes to the database tables,
-you can add migrations in the [migrations](migrations) directory and they will be picked up when running docker-compose. You can also just apply the migrations to the database directly, but if you do, please make sure to
+you can add migrations in the [migrations](migrations) directory and then run `docker-compose up flyway` to apply the migrations to the database. You can also just apply the migrations to the database directly, but if you do, please make sure to
 note down the SQL statements in the [answers.md](answers.md) file.
 
 ## Exercises
@@ -113,9 +113,7 @@ When a user interacts with the Payment Methods widget, something seems off.
 When adding or deleting or activating a payment method the changes are not
 reflected until the user refreshes the page.
 
-
-https://github.com/user-attachments/assets/98fdc4cc-38d9-4a66-b7be-0001a45d9d37
-
+<https://github.com/user-attachments/assets/98fdc4cc-38d9-4a66-b7be-0001a45d9d37>
 
 Please fix this issue, so that updates are reflected right away without
 needing to refresh the page.

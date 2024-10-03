@@ -53,20 +53,13 @@ services:
     volumes:
       - db_data:/var/lib/mysql
 
-  migrate:
-    image: mysql:8.0
-    command: >
-      sh -c "
-      until mysql -h db -uroot -proot -e 'select 1'; do
-        echo 'Waiting for MySQL to be ready...';
-        sleep 2;
-      done;
-      mysql -h db -uroot -proot parent_profile < /migrations/01-init.sql
-      "
+  flyway:
+    image: flyway/flyway:8.0.0
+    command: -url=jdbc:mysql://db:3306/parent_profile -user=root -password=root -locations=filesystem:/migrations migrate
     volumes:
       - ./migrations:/migrations
     depends_on:
       - db
-
+    restart: "on-failure"
 volumes:
   db_data:
