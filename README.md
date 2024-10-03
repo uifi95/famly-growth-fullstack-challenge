@@ -113,6 +113,10 @@ When a user interacts with the Payment Methods widget, something seems off.
 When adding or deleting or activating a payment method the changes are not
 reflected until the user refreshes the page.
 
+
+https://github.com/user-attachments/assets/98fdc4cc-38d9-4a66-b7be-0001a45d9d37
+
+
 Please fix this issue, so that updates are reflected right away without
 needing to refresh the page.
 
