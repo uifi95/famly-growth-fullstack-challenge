@@ -1,9 +1,5 @@
 # Famly technical challenge: Fullstack Engineer in Growth
 
-TODO
-
-- [ ] Hot reloading Scala project not working
-
 Hi :wave:
 
 This repository contains a technical challenge for a full-stack engineering
