@@ -42,8 +42,6 @@ Thumbs.db
 *.swp
 *.swo
 
-# Application-specific
-application.conf
 
 # Logs
 logs/

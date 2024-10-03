@@ -85,7 +85,6 @@ object Main extends App with FailFastCirceSupport {
 
   println(s"Server online at http://0.0.0.0:9000/")
   println("Press RETURN to stop...")
-  println("OK COOL!")
 
   // Keep the application running
   scala.sys.addShutdownHook {
