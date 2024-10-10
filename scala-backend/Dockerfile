@@ -22,5 +22,5 @@ COPY . .
 EXPOSE 9000
 
 # Start sbt with file watching
-CMD ["sbt", "~reStart"]
+CMD ["sbt", "~test;reStart"]
 

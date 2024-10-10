@@ -1,5 +1,7 @@
 package repository
 
+import scala.util.chaining._
+
 import domain._
 import slick.jdbc.MySQLProfile.api._
 import scala.concurrent.{Future, ExecutionContext}
@@ -33,38 +35,32 @@ class ProfileRepository(db: Database)(implicit ec: ExecutionContext) {
   private val paymentMethods = TableQuery[PaymentMethodsTable]
   private val invoices = TableQuery[InvoicesTable]
 
-  def listPaymentMethods(parentId: Long): Future[Seq[PaymentMethod]] =
-    db.run(paymentMethods.filter(_.parentId === parentId).result)
-
-  def listInvoices(parentId: Long): Future[Seq[Invoice]] =
-    db.run(invoices.filter(_.parentId === parentId).result)
-
-  def getParentProfile(parentId: Long): Future[Option[ParentProfile]] =
-    db.run(parents.filter(_.id === parentId).result.headOption)
-
-  def addPaymentMethod(paymentMethod: PaymentMethod): Future[Either[String, PaymentMethod]] =
+  def createPaymentMethod(paymentMethod: PaymentMethod): Future[Either[String, PaymentMethod]] =
     db.run((paymentMethods returning paymentMethods.map(_.id)
-      into ((method, id) => method.copy(id = id))) += paymentMethod)
+        into ((method, id) => method.copy(id = id))) += paymentMethod)
       .map(Right(_))
       .recover { case ex => Left(s"Failed to add payment method: ${ex.getMessage}") }
 
-  def setActivePaymentMethod(parentId: Long, methodId: Long): Future[Either[String, PaymentMethod]] = {
-    val updateActions = for {
-      _ <- paymentMethods.filter(_.parentId === parentId).map(_.isActive).update(false)
-      updatedRows <- paymentMethods.filter(_.id === methodId).map(_.isActive).update(true)
-      updatedMethod <- paymentMethods.filter(_.id === methodId).result.headOption if updatedRows > 0
-    } yield updatedMethod
+  def retrievePaymentMethods(parentId: Long): Future[Seq[PaymentMethod]] =
+    db.run(paymentMethods.filter(_.parentId === parentId).result)
 
-    db.run(updateActions.transactionally)
-      .map(_.toRight(s"No payment method found with id $methodId"))
-      .recover { case ex => Left(s"Failed to set active payment method: ${ex.getMessage}") }
-  }
+  def retrieveInvoices(parentId: Long): Future[Seq[Invoice]] =
+    db.run(invoices.filter(_.parentId === parentId).result)
 
-  def deletePaymentMethod(parentId: Long, methodName: String): Future[Either[String, Int]] =
-    db.run(paymentMethods.filter(pm => pm.parentId === parentId && pm.method === methodName).delete)
+  def retrieveParentProfiles(parentId: Long): Future[Seq[ParentProfile]] =
+    db.run(parents.filter(_.id === parentId).result)
+
+  def updatePaymentMethods(updatedPaymentMethods: Seq[PaymentMethod]): Future[Seq[Int]] =
+    updatedPaymentMethods
+      .map(paymentMethod => paymentMethods.filter(_.id === paymentMethod.id).update(paymentMethod))
+      .pipe(DBIO.sequence(_).transactionally)
+      .pipe(db.run)
+
+  def deletePaymentMethod(methodId: Long): Future[Either[String, Int]] =
+    db.run(paymentMethods.filter(pm => pm.id === methodId).delete)
       .map {
         case rowsDeleted if rowsDeleted > 0 => Right(rowsDeleted)
-        case _ => Left(s"No payment method found with name $methodName for parent $parentId")
+        case _ => Left(s"Payment method with id $methodId not deleted, because it wasn't there")
       }
       .recover { case ex => Left(s"Failed to delete payment method: ${ex.getMessage}") }
 }

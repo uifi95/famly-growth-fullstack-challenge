@@ -1,10 +1,12 @@
 package api
 
+import scala.concurrent.ExecutionContext
+import scala.util.chaining._
+
 import domain._
 import repository.ProfileRepository
 import sangria.schema._
 import sangria.macros.derive._
-import scala.concurrent.ExecutionContext
 
 object GraphQLSchema {
 
@@ -17,15 +19,18 @@ object GraphQLSchema {
     fields[ProfileRepository, Unit](
       Field("parentProfile", OptionType(ParentProfileType), 
         arguments = Argument("parentId", LongType) :: Nil,
-        resolve = ctx => ctx.ctx.getParentProfile(ctx.arg[Long]("parentId"))
+        resolve = ctx => ctx.arg[Long]("parentId").pipe(parentId =>
+          ctx.ctx.retrieveParentProfiles(parentId).map(ParentProfileBackend(_, Nil, Nil).parentProfile(parentId)))
       ),
       Field("paymentMethods", ListType(PaymentMethodType),
         arguments = Argument("parentId", LongType) :: Nil,
-        resolve = ctx => ctx.ctx.listPaymentMethods(ctx.arg[Long]("parentId"))
+        resolve = ctx => ctx.arg[Long]("parentId").pipe(parentId =>
+          ctx.ctx.retrievePaymentMethods(parentId).map(ParentProfileBackend(Nil, Nil, _).paymentMethods(parentId)))
       ),
       Field("invoices", ListType(InvoiceType),
         arguments = Argument("parentId", LongType) :: Nil,
-        resolve = ctx => ctx.ctx.listInvoices(ctx.arg[Long]("parentId"))
+        resolve = ctx => ctx.arg[Long]("parentId").pipe(parentId =>
+          ctx.ctx.retrieveInvoices(parentId).map(ParentProfileBackend(Nil, _, Nil).invoices(parentId)))
       )
     )
   )
@@ -35,30 +40,35 @@ object GraphQLSchema {
     fields[ProfileRepository, Unit](
       Field("addPaymentMethod", OptionType(PaymentMethodType),
         arguments = Argument("parentId", LongType) :: Argument("method", StringType) :: Nil,
-        resolve = ctx => {
-          val newMethod = PaymentMethod(0, ctx.arg[Long]("parentId"), ctx.arg[String]("method"), isActive = false)
-          ctx.ctx.addPaymentMethod(newMethod).map {
-            case Right(method) => Some(method)
-            case Left(_) => None
-          }
-        }
+        resolve = ctx => (ctx.arg[Long]("parentId"), ctx.arg[String]("method")).pipe {
+          case (parentId, method) =>
+            ctx.ctx.createPaymentMethod(PaymentMethod(0, parentId, method, isActive = false))
+              .map(_.map(paymentMethod => ParentProfileBackend(Nil, Nil, Seq(paymentMethod)).paymentMethod(paymentMethod.id)))
+        }.map(_.toOption.flatten)
       ),
       Field("setActivePaymentMethod", OptionType(PaymentMethodType),
         arguments = Argument("parentId", LongType) :: Argument("methodId", LongType) :: Nil,
-        resolve = ctx => ctx.ctx.setActivePaymentMethod(ctx.arg[Long]("parentId"), ctx.arg[Long]("methodId")).map {
-          case Right(method) => Some(method)
-          case Left(_) => None
-        }
+        resolve = ctx =>
+          (ctx.arg[Long]("parentId"), ctx.arg[Long]("methodId")).pipe {
+            case (parentId, method) =>
+              ctx.ctx.retrievePaymentMethods(parentId)
+                .map(ParentProfileBackend(Nil, Nil, _).setActivePaymentMethod(parentId, method))
+                .flatMap(parentProfileBackend => ctx.ctx.updatePaymentMethods(parentProfileBackend.allPaymentMethods).map(_ => parentProfileBackend.paymentMethod(method)))
+          }
       ),
       Field("deletePaymentMethod", BooleanType,
         arguments = Argument("parentId", LongType) :: Argument("method", StringType) :: Nil,
-        resolve = ctx => {
-          // Bug: We're using parentId instead of methodId to delete the payment method
-          ctx.ctx.deletePaymentMethod(ctx.arg[Long]("parentId"), ctx.arg[String]("method")).map {
-            case Right(_) => true
-            case Left(_) => false
-          }
-        }
+        resolve = ctx =>
+          (ctx.arg[Long]("parentId"), ctx.arg[String]("method")).pipe {
+              case (parentId, method) =>
+                ctx.ctx.retrievePaymentMethods(parentId).map { paymentMethods =>
+                  ParentProfileBackend(Nil, Nil, paymentMethods).pipe { initialParentProfileBackend =>
+                    val parentProfileBackend = initialParentProfileBackend.deletePaymentMethod(parentId, method)
+
+                    (initialParentProfileBackend.allPaymentMethods.toSet -- parentProfileBackend.allPaymentMethods).map(paymentMethod => ctx.ctx.deletePaymentMethod(paymentMethod.id))
+                  }
+                }
+            }.map(_ => true)
       )
     )
   )
