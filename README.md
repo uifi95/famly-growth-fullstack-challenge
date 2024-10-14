@@ -96,8 +96,7 @@ Once everything is up-and-running via docker-compose you can access
 
 - <http://localhost:9000>
 
-When making changes to the code the servers running in Docker will pick up those changes. Once everything is done re-building you should be able to
-see your changes by refreshing the page.
+When making changes to the code the servers running in Docker will pick up those changes. Once everything is done re-building and tests run successfully, you should be able to see your changes by refreshing the page.
 
 **Making changes to the database**
 

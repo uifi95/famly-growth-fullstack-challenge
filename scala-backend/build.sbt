@@ -16,7 +16,8 @@ libraryDependencies ++= Seq(
   "com.typesafe.slick" %% "slick" % "3.3.3",
   "com.typesafe.slick" %% "slick-hikaricp" % "3.3.3",
   "mysql" % "mysql-connector-java" % "8.0.26",
-  "ch.megard" %% "akka-http-cors" % "1.1.3"
+  "ch.megard" %% "akka-http-cors" % "1.1.3",
+  "org.scalatest" %% "scalatest" % "3.2.19" % "test"
 )
 
 
