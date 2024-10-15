@@ -118,12 +118,22 @@ const PaymentMethods = ({ parentId }: { parentId: number }) => {
 
     const handleAddMethod = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (newMethod.trim()) {
-            await addPaymentMethod({
-                variables: { parentId, method: newMethod.trim() },
-            });
-            setNewMethod('');
+        if (!newMethod.trim()) {
+            return;
         }
+
+        const {
+            data: { addPaymentMethod: addPaymentData },
+        } = await addPaymentMethod({
+            variables: { parentId, method: newMethod.trim() },
+        });
+
+        if (data.paymentMethods.length === 0) {
+            await setActivePaymentMethod({
+                variables: { parentId, methodId: addPaymentData.id },
+            });
+        }
+        setNewMethod('');
     };
 
     const handleDeleteMethod = (methodId: number) => {
@@ -164,44 +174,58 @@ const PaymentMethods = ({ parentId }: { parentId: number }) => {
                 </Button>
             </form>
             <List>
-                {data?.paymentMethods.map((method: any) => (
-                    <ListItem key={method.id} className={classes.listItem}>
-                        <ListItemIcon>
-                            <CreditCardIcon />
-                        </ListItemIcon>
-                        <ListItemText
-                            data-testid={`card-title-${method.id}`}
-                            primary={method.method}
-                            secondary={method.isActive ? 'Active' : 'Inactive'}
-                            primaryTypographyProps={{
-                                className: classes.primaryText,
-                            }}
-                            secondaryTypographyProps={{
-                                className: method.isActive
-                                    ? classes.activeText
-                                    : classes.inactiveText,
-                            }}
-                        />
-                        {!method.isActive && (
-                            <Button
-                                variant="contained"
-                                className={classes.button}
-                                onClick={() => handleActivate(method.id)}
-                                size="small"
-                            >
-                                Activate
-                            </Button>
-                        )}
-                        <IconButton
-                            title="delete"
-                            className={classes.deleteButton}
-                            onClick={() => handleDeleteMethod(method.id)}
-                            size="small"
-                        >
-                            <DeleteIcon />
-                        </IconButton>
-                    </ListItem>
-                ))}
+                {data?.paymentMethods.length === 0 ? (
+                    <Typography>
+                        Add a payment method to use our services
+                    </Typography>
+                ) : (
+                    data?.paymentMethods.map((method: any) => (
+                        <ListItem key={method.id} className={classes.listItem}>
+                            <ListItemIcon>
+                                <CreditCardIcon />
+                            </ListItemIcon>
+                            <ListItemText
+                                data-testid={`card-title-${method.id}`}
+                                primary={method.method}
+                                secondary={
+                                    method.isActive ? 'Active' : 'Inactive'
+                                }
+                                primaryTypographyProps={{
+                                    className: classes.primaryText,
+                                }}
+                                secondaryTypographyProps={{
+                                    className: method.isActive
+                                        ? classes.activeText
+                                        : classes.inactiveText,
+                                }}
+                            />
+                            {!method.isActive && (
+                                <>
+                                    <Button
+                                        variant="contained"
+                                        className={classes.button}
+                                        onClick={() =>
+                                            handleActivate(method.id)
+                                        }
+                                        size="small"
+                                    >
+                                        Activate
+                                    </Button>
+                                    <IconButton
+                                        title="delete"
+                                        className={classes.deleteButton}
+                                        onClick={() =>
+                                            handleDeleteMethod(method.id)
+                                        }
+                                        size="small"
+                                    >
+                                        <DeleteIcon />
+                                    </IconButton>
+                                </>
+                            )}
+                        </ListItem>
+                    ))
+                )}
             </List>
         </div>
     );
