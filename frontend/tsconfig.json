@@ -3,6 +3,7 @@
     "target": "ESNext",
     "module": "ESNext",
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "types": ["@testing-library/jest-dom", "jest"],
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
