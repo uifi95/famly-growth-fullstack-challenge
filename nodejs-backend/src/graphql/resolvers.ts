@@ -1,5 +1,6 @@
 import { GraphQLLong } from "graphql-scalars";
-import { ProfileRepository } from "../repository/ProfileRepository";
+import { ProfileRepository } from "../repository/profileRepository";
+import { ParentProfileBackend } from "../parentProfileBackend";
 
 const profileRepository = new ProfileRepository();
 
@@ -7,13 +8,13 @@ export const resolvers = {
   Long: GraphQLLong,
   Query: {
     parentProfile: async (_: any, { parentId }: { parentId: number }) => {
-      return await profileRepository.getParentProfile(parentId);
+      return new ParentProfileBackend(await profileRepository.retrieveParentProfiles(parentId), [], []).parentProfile(parentId);
     },
     paymentMethods: async (_: any, { parentId }: { parentId: number }) => {
-      return await profileRepository.listPaymentMethods(parentId);
+      return new ParentProfileBackend([], [], await profileRepository.retrievePaymentMethods(parentId)).paymentMethods(parentId);
     },
     invoices: async (_: any, { parentId }: { parentId: number }) => {
-      return await profileRepository.listInvoices(parentId);
+      return new ParentProfileBackend([], await profileRepository.retrieveInvoices(parentId), []).invoices(parentId);
     },
   },
   Mutation: {
@@ -21,19 +22,31 @@ export const resolvers = {
       _: any,
       { parentId, method }: { parentId: number; method: string },
     ) => {
-      return await profileRepository.addPaymentMethod(parentId, method);
+      const paymentMethod = await profileRepository.createPaymentMethod({ id: 0, parentId, method, isActive: false });
+      return new ParentProfileBackend([], [], [paymentMethod]).paymentMethod(paymentMethod.id);
     },
     setActivePaymentMethod: async (
       _: any,
       { parentId, methodId }: { parentId: number; methodId: number },
     ) => {
-      return await profileRepository.setActivePaymentMethod(parentId, methodId);
+      const parentProfileBackend = new ParentProfileBackend([], [], await profileRepository.retrievePaymentMethods(parentId)).setActivePaymentMethod(parentId, methodId);
+
+      await profileRepository.updatePaymentMethods(parentProfileBackend.paymentMethods(parentId))
+
+      return parentProfileBackend.paymentMethod(methodId);
     },
     deletePaymentMethod: async (
       _: any,
       { parentId, method }: { parentId: number; method: string },
     ) => {
-      return await profileRepository.deletePaymentMethod(parentId, method);
+      const initialParentProfileBackend = new ParentProfileBackend([], [], await profileRepository.retrievePaymentMethods(parentId));
+      const parentProfileBackend = initialParentProfileBackend.deletePaymentMethod(parentId, method);
+
+      await Promise.all(initialParentProfileBackend.paymentMethods(parentId)
+        .filter(paymentMethod => !parentProfileBackend.paymentMethods(parentId).includes(paymentMethod))
+        .map(paymentMethod => profileRepository.deletePaymentMethod(paymentMethod.id)))
+
+      return true;
     },
   },
 };
