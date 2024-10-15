@@ -1,7 +1,21 @@
+import { Logger } from '../repository/logger';
 import { ParentProfileBackend } from '../parentProfileBackend';
+import { before } from 'node:test';
 
 describe('Parent profile backend', () => {
-    const parentProfileBackend = new ParentProfileBackend([], [], []);
+    const logger = new Logger();
+    let mockLog: jest.SpyInstance;
+
+    beforeEach(() => {
+        mockLog = jest.spyOn(logger, 'log');
+    });
+
+    afterEach(() => {
+        // restore the spy created with spyOn
+        jest.restoreAllMocks();
+    });
+
+    const parentProfileBackend = new ParentProfileBackend([], [], [], logger);
 
     describe('Parent profile', () => {
         it('When no parent profile exists yet, there should be none', () => {
@@ -82,6 +96,17 @@ describe('Parent profile backend', () => {
                 method: 'Credit Card',
                 isActive: true,
             });
+
+            expect(mockLog).toHaveBeenCalledWith({
+                parentId: 1,
+                logType: 'PaymentMethod',
+                message: `Created payment method: ${logger.formatPaymentMethod({
+                    id: 1,
+                    parentId: 1,
+                    method: 'Credit Card',
+                    isActive: true,
+                })}`,
+            });
         });
 
         it('When a payment method is created, and there is a payment method already, the new one should have an id of 2', () => {
@@ -97,6 +122,17 @@ describe('Parent profile backend', () => {
                 method: 'Debit Card',
                 isActive: true,
             });
+
+            expect(mockLog).toHaveBeenCalledWith({
+                parentId: 1,
+                logType: 'PaymentMethod',
+                message: `Created payment method: ${logger.formatPaymentMethod({
+                    id: 2,
+                    parentId: 1,
+                    method: 'Debit Card',
+                    isActive: true,
+                })}`,
+            });
         });
 
         it("When a payment method is deleted it should go away, because we don't want to keep payment methods around due to privacy concerns", () => {
@@ -111,6 +147,17 @@ describe('Parent profile backend', () => {
                 parentId: 1,
                 method: 'Credit Card',
                 isActive: true,
+            });
+
+            expect(mockLog).toHaveBeenCalledWith({
+                parentId: 1,
+                logType: 'PaymentMethod',
+                message: `Deleted payment method: ${logger.formatPaymentMethod({
+                    id: 1,
+                    parentId: 1,
+                    method: 'Credit Card',
+                    isActive: true,
+                })}`,
             });
         });
 
@@ -128,6 +175,19 @@ describe('Parent profile backend', () => {
                 method: 'Credit Card',
                 isActive: true,
             });
+
+            expect(mockLog).toHaveBeenCalledWith({
+                parentId: 1,
+                logType: 'PaymentMethod',
+                message: `Activated payment method: ${logger.formatPaymentMethod(
+                    {
+                        id: 1,
+                        parentId: 1,
+                        method: 'Credit Card',
+                        isActive: true,
+                    }
+                )}`,
+            });
         });
 
         it('When a payment method is added, we should be able to get it by id, so what we can show the newly added payment method', () => {
@@ -142,6 +202,17 @@ describe('Parent profile backend', () => {
                 parentId: 2,
                 method: 'Credit Card',
                 isActive: true,
+            });
+
+            expect(mockLog).toHaveBeenCalledWith({
+                parentId: 2,
+                logType: 'PaymentMethod',
+                message: `Created payment method: ${logger.formatPaymentMethod({
+                    id: 1,
+                    parentId: 1,
+                    method: 'Credit Card',
+                    isActive: true,
+                })}`,
             });
         });
     });

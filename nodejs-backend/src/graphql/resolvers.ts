@@ -40,11 +40,10 @@ export const resolvers = {
                 method,
                 isActive: false,
             });
-            return new ParentProfileBackend(
-                [],
-                [],
-                [paymentMethod]
-            ).paymentMethod(paymentMethod.id);
+
+            return new ParentProfileBackend([], [], [paymentMethod])
+                .createPaymentMethod(parentId, method, false)
+                .paymentMethod(paymentMethod.id);
         },
         setActivePaymentMethod: async (
             _: any,
