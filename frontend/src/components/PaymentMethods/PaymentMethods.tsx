@@ -126,9 +126,9 @@ const PaymentMethods = ({ parentId }: { parentId: number }) => {
         }
     };
 
-    const handleDeleteMethod = (method: string) => {
+    const handleDeleteMethod = (methodId: number) => {
         return deletePaymentMethod({
-            variables: { parentId, method },
+            variables: { parentId, methodId },
         });
     };
 
@@ -195,7 +195,7 @@ const PaymentMethods = ({ parentId }: { parentId: number }) => {
                         <IconButton
                             title="delete"
                             className={classes.deleteButton}
-                            onClick={() => handleDeleteMethod(method.method)}
+                            onClick={() => handleDeleteMethod(method.id)}
                             size="small"
                         >
                             <DeleteIcon />

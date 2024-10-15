@@ -21,7 +21,7 @@ export const ADD_PAYMENT_METHOD = gql`
 `;
 
 export const DELETE_PAYMENT_METHOD = gql`
-    mutation DeletePaymentMethod($parentId: Long!, $method: String!) {
-        deletePaymentMethod(parentId: $parentId, method: $method)
+    mutation DeletePaymentMethod($parentId: Long!, $methodId: Long!) {
+        deletePaymentMethod(parentId: $parentId, methodId: $methodId)
     }
 `;
