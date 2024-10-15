@@ -108,7 +108,7 @@ const App = () => {
                     </Grid>
                     <Grid item xs={12}>
                         <Grid container spacing={3}>
-                            <Grid item xs={12} md={4}>
+                            <Grid item xs={12} md={6}>
                                 <Paper
                                     style={{
                                         padding: '1rem',
@@ -119,7 +119,7 @@ const App = () => {
                                     <PaymentMethods parentId={PARENT_ID} />
                                 </Paper>
                             </Grid>
-                            <Grid item xs={12} md={8}>
+                            <Grid item xs={12} md={6}>
                                 <Paper
                                     style={{
                                         padding: '1rem',

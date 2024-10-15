@@ -56,6 +56,11 @@ const useStyles = makeStyles((theme: Theme) => ({
     activeText: {
         color: theme.palette.success.main,
     },
+    ellipsisText: {
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap',
+        overflowX: 'hidden',
+    },
     inactiveText: {
         color: theme.palette.error.main,
     },
@@ -188,17 +193,32 @@ const PaymentMethods = ({ parentId }: { parentId: number }) => {
                                 data-testid={`card-title-${method.id}`}
                                 primary={method.method}
                                 secondary={
-                                    method.isActive ? 'Active' : 'Inactive'
+                                    <Typography
+                                        className={classes.ellipsisText}
+                                    >
+                                        <span
+                                            className={
+                                                method.isActive
+                                                    ? classes.activeText
+                                                    : classes.inactiveText
+                                            }
+                                        >
+                                            {method.isActive
+                                                ? 'Active'
+                                                : 'Inactive'}
+                                        </span>
+                                        {method.createdAt && (
+                                            <span>
+                                                {' - '}
+                                                {method.createdAt}
+                                            </span>
+                                        )}
+                                    </Typography>
                                 }
                                 primaryTypographyProps={{
                                     className: classes.primaryText,
                                 }}
-                                secondaryTypographyProps={{
-                                    className: method.isActive
-                                        ? classes.activeText
-                                        : classes.inactiveText,
-                                }}
-                            />
+                            ></ListItemText>
                             {!method.isActive && (
                                 <>
                                     <Button

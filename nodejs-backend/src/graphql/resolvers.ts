@@ -1,4 +1,4 @@
-import { GraphQLLong } from 'graphql-scalars';
+import { GraphQLLong, GraphQLDateTime } from 'graphql-scalars';
 import { ProfileRepository } from '../repository/profileRepository';
 import { ParentProfileBackend } from '../parentProfileBackend';
 

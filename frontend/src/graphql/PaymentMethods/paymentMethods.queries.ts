@@ -6,6 +6,7 @@ export const GET_PAYMENT_METHODS = gql`
             id
             method
             isActive
+            createdAt
         }
     }
 `;

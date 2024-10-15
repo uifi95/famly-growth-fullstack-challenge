@@ -2,6 +2,7 @@ import { gql } from 'apollo-server-express';
 
 export const typeDefs = gql`
     scalar Long
+    scalar DateTime
 
     type ParentProfile {
         id: Long!
@@ -14,6 +15,7 @@ export const typeDefs = gql`
         parentId: Int!
         method: String!
         isActive: Boolean!
+        createdAt: DateTime!
     }
 
     type Invoice {

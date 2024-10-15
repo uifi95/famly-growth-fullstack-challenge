@@ -5,3 +5,7 @@
 Refactored the code a little bit on FE and added unit tests for the bug.
 you can run `yarn test` after running `yarn` locally to test this,
 or run it in Docker with the console, no need for any install there
+
+## 4
+
+I would make a nice datetime handling system, saving in UTC dates in the DB and using a date library on the FE that processes UTC date strings, but it is out of scope of this task.
